@@ -1,0 +1,11 @@
+*
+!Jenkinsfile
+!Dockerfile
+!service-account-*
+!*.*
+!*/
+*.sw?
+.DS_Store
+.wercker/
+coverage.txt
+*.out
