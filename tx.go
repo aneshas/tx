@@ -38,6 +38,13 @@ func (t *TX) Do(ctx context.Context, f func(ctx context.Context) error) error {
 		return fmt.Errorf("tx: could not start transaction: %w", err)
 	}
 
+	defer func() {
+		if r := recover(); r != nil {
+			_ = tx.Rollback()
+			panic(r)
+		}
+	}()
+
 	ctx = context.WithValue(ctx, key{}, tx)
 
 	err = f(ctx)
