@@ -149,3 +149,29 @@ func TestShould_Not_Retrieve_Conn_From_Context_Without_Transaction(t *testing.T)
 	assert.False(t, ok)
 	assert.Nil(t, ttx)
 }
+
+func TestFrom_Should_Begin_Transaction_If_One_Is_Not_Present_In_The_Context(t *testing.T) {
+	db := testutil.NewDB(
+		t,
+		testutil.WithSuccessfulTransactionStart(),
+	)
+
+	ttx, err := tx.From[tx.Transaction](context.TODO(), db)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, ttx)
+}
+
+func TestFrom_Should_Report_Transaction_Begin_Error(t *testing.T) {
+	wantErr := fmt.Errorf("something bad occurred")
+
+	db := testutil.NewDB(
+		t,
+		testutil.WithUnsuccessfulTransactionStart(wantErr),
+	)
+
+	ttx, err := tx.From[tx.Transaction](context.TODO(), db)
+
+	assert.Nil(t, ttx)
+	assert.ErrorIs(t, err, wantErr)
+}

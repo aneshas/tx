@@ -84,6 +84,21 @@ func (t *TX) shouldIgnore(err error) bool {
 	return false
 }
 
+func From[T any](ctx context.Context, orDB DB) (T, error) {
+	if t, ok := Conn[T](ctx); ok {
+		return t.(T), nil
+	}
+
+	ttx, err := orDB.Begin(ctx)
+	if err != nil {
+		var t T
+
+		return t, err
+	}
+
+	return ttx.(T), nil
+}
+
 // Conn returns underlying tx value from context if it can be type-casted to T
 // Otherwise it returns nil, false
 func Conn[T any](ctx context.Context) (any, bool) {

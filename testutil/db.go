@@ -27,6 +27,13 @@ func WithUnsuccessfulTransactionStart(with error) Option {
 	}
 }
 
+func WithSuccessfulTransactionStart() Option {
+	return func(db *DB) {
+		tx := mocks.NewTransaction(db.t)
+		db.EXPECT().Begin(mock.Anything).Return(tx, nil).Once()
+	}
+}
+
 func WithSuccessfulCommit() Option {
 	return func(db *DB) {
 		tx := mocks.NewTransaction(db.t)

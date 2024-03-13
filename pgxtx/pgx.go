@@ -3,10 +3,12 @@ package pgxtx
 import (
 	"context"
 	"github.com/aneshas/tx"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+var _ tx.DB = &Pool{}
+
+// NewDBFromPool instantiates new tx.DB *pgxpool.Pool wrapper
 func NewDBFromPool(pool *pgxpool.Pool) tx.DB {
 	// We can extend these to be able to receive isolation options
 	// which would then be passed to tx.Begin
@@ -14,35 +16,22 @@ func NewDBFromPool(pool *pgxpool.Pool) tx.DB {
 	return &Pool{pool}
 }
 
+// Pool represents tx wrapper for *pgxpool.Pool in order to implement tx.DB
 type Pool struct {
 	*pgxpool.Pool
 }
 
+// Begin begins pgx transaction
 func (p *Pool) Begin(ctx context.Context) (tx.Transaction, error) {
-	txx, err := p.Pool.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return &PoolTx{txx}, nil
+	return p.Pool.Begin(ctx)
 }
 
-type PoolTx struct {
-	pgx.Tx
-}
-
-func (p *PoolTx) Commit(ctx context.Context) error {
-	return p.Tx.Commit(ctx)
-}
-
-func (p *PoolTx) Rollback(ctx context.Context) error {
-	return p.Tx.Rollback(ctx)
-}
-
-func ConnFrom[T pgx.Tx](ctx context.Context, or T) pgx.Tx {
-	if t, ok := tx.Conn[pgx.Tx](ctx); ok {
-		return t.(pgx.Tx)
-	}
-
-	return or
+// From returns underlying T from the context which in most cases should probably be pgx.Tx
+// but is left as a generic type in order to accommodate cases where people tend to abstract
+// the whole connection away behind an interface (see examples)
+// T should be an interface
+//
+// Example:
+func From[T any](ctx context.Context, pool *pgxpool.Pool) (T, error) {
+	return tx.From[T](ctx, NewDBFromPool(pool))
 }
