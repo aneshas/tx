@@ -1,11 +1,7 @@
-// Package tx provides a simple transaction abstraction in order to enable decoupling/abstraction of persistence from
-// application/domain logic while still leaving transaction control to the application service.
-// (Something like @Transactional annotation in Java, without an annotation)
 package tx
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 )
@@ -17,14 +13,32 @@ type Transactor interface {
 	Do(ctx context.Context, f func(ctx context.Context) error) error
 }
 
+// DB represents an interface to a db capable of starting a transaction
+type DB interface {
+	Begin(ctx context.Context) (Transaction, error)
+}
+
+// Transaction represents db transaction
+type Transaction interface {
+	Commit(ctx context.Context) error
+	Rollback(ctx context.Context) error
+}
+
 // New constructs new transactor which will use provided db to handle the transaction
-func New(db *sql.DB) *TX {
-	return &TX{db: db}
+func New(db DB, opts ...Option) *TX {
+	ttx := TX{db: db}
+
+	for _, opt := range opts {
+		opt(&ttx)
+	}
+
+	return &ttx
 }
 
 // TX represents sql transactor
 type TX struct {
-	db *sql.DB
+	db         DB
+	ignoreErrs []error
 }
 
 // Do will execute func f in a sql transaction.
@@ -33,14 +47,14 @@ type TX struct {
 // If f fails with an error, transactor will automatically try to roll back the transaction and report back any errors,
 // otherwise the implicit transaction will be committed.
 func (t *TX) Do(ctx context.Context, f func(ctx context.Context) error) error {
-	tx, err := t.db.BeginTx(ctx, nil) // add tx options if different isolation levels are needed
+	tx, err := t.db.Begin(ctx) // add tx options if different isolation levels are needed
 	if err != nil {
 		return fmt.Errorf("tx: could not start transaction: %w", err)
 	}
 
 	defer func() {
 		if r := recover(); r != nil {
-			_ = tx.Rollback()
+			_ = tx.Rollback(ctx)
 			panic(r)
 		}
 	}()
@@ -48,8 +62,8 @@ func (t *TX) Do(ctx context.Context, f func(ctx context.Context) error) error {
 	ctx = context.WithValue(ctx, key{}, tx)
 
 	err = f(ctx)
-	if err != nil {
-		e := tx.Rollback()
+	if err != nil && !t.shouldIgnore(err) {
+		e := tx.Rollback(ctx)
 		if e != nil {
 			return errors.Join(e, err)
 		}
@@ -57,25 +71,31 @@ func (t *TX) Do(ctx context.Context, f func(ctx context.Context) error) error {
 		return err
 	}
 
-	return tx.Commit()
+	return errors.Join(err, tx.Commit(ctx))
 }
 
-// DB returns the underlying *sql.DB
-func (t *TX) DB() *sql.DB {
-	return t.db
+func (t *TX) shouldIgnore(err error) bool {
+	for _, e := range t.ignoreErrs {
+		if errors.Is(err, e) {
+			return true
+		}
+	}
+
+	return false
 }
 
-// Tx returns the implicit transaction if available, otherwise it returns nil
-func Tx(ctx context.Context) *sql.Tx {
+// Conn returns underlying tx value from context if it can be type-casted to T
+// Otherwise it returns nil, false
+func Conn[T any](ctx context.Context) (any, bool) {
 	val := ctx.Value(key{})
 	if val == nil {
-		return nil
+		return nil, false
 	}
 
-	tx, ok := val.(*sql.Tx)
+	tx, ok := val.(T)
 	if !ok {
-		return nil
+		return nil, false
 	}
 
-	return tx
+	return tx, true
 }
