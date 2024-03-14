@@ -1,8 +1,9 @@
-package pgxtx
+package pgxtxv5
 
 import (
 	"context"
 	"github.com/aneshas/tx"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -16,7 +17,7 @@ func NewDBFromPool(pool *pgxpool.Pool) tx.DB {
 	return &Pool{pool}
 }
 
-// Pool represents tx wrapper for *pgxpool.Pool in order to implement tx.DB
+// Pool implements tx.DB
 type Pool struct {
 	*pgxpool.Pool
 }
@@ -26,12 +27,8 @@ func (p *Pool) Begin(ctx context.Context) (tx.Transaction, error) {
 	return p.Pool.Begin(ctx)
 }
 
-// From returns underlying T from the context which in most cases should probably be pgx.Tx
-// but is left as a generic type in order to accommodate cases where people tend to abstract
-// the whole connection away behind an interface (see examples)
-// T should be an interface
-//
-// Example:
-func From[T any](ctx context.Context, pool *pgxpool.Pool) (T, error) {
-	return tx.From[T](ctx, NewDBFromPool(pool))
+// From returns underlying pgx.Tx from the context.
+// If you need to obtain a different interface back see tx.From
+func From(ctx context.Context) (pgx.Tx, bool) {
+	return tx.From[pgx.Tx](ctx)
 }

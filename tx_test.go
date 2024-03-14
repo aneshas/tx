@@ -117,7 +117,7 @@ func TestShould_Retrieve_Tx_From_Context(t *testing.T) {
 	transactor := tx.New(db)
 
 	_ = transactor.Do(context.TODO(), func(ctx context.Context) error {
-		ttx, ok := tx.Conn[*mocks.Transaction](ctx)
+		ttx, ok := tx.From[tx.Transaction](ctx)
 
 		assert.True(t, ok)
 		assert.IsType(t, &mocks.Transaction{}, ttx)
@@ -134,44 +134,17 @@ func TestShould_Not_Retrieve_Conn_From_Context_On_Mismatched_Type(t *testing.T) 
 	transactor := tx.New(db)
 
 	_ = transactor.Do(context.TODO(), func(ctx context.Context) error {
-		ttx, ok := tx.Conn[mocks.Transaction](ctx)
+		_, ok := tx.From[mocks.Transaction](ctx)
 
 		assert.False(t, ok)
-		assert.Nil(t, ttx)
 
 		return nil
 	})
 }
 
 func TestShould_Not_Retrieve_Conn_From_Context_Without_Transaction(t *testing.T) {
-	ttx, ok := tx.Conn[*mocks.Transaction](context.TODO())
+	ttx, ok := tx.From[*mocks.Transaction](context.TODO())
 
 	assert.False(t, ok)
 	assert.Nil(t, ttx)
-}
-
-func TestFrom_Should_Begin_Transaction_If_One_Is_Not_Present_In_The_Context(t *testing.T) {
-	db := testutil.NewDB(
-		t,
-		testutil.WithSuccessfulTransactionStart(),
-	)
-
-	ttx, err := tx.From[tx.Transaction](context.TODO(), db)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, ttx)
-}
-
-func TestFrom_Should_Report_Transaction_Begin_Error(t *testing.T) {
-	wantErr := fmt.Errorf("something bad occurred")
-
-	db := testutil.NewDB(
-		t,
-		testutil.WithUnsuccessfulTransactionStart(wantErr),
-	)
-
-	ttx, err := tx.From[tx.Transaction](context.TODO(), db)
-
-	assert.Nil(t, ttx)
-	assert.ErrorIs(t, err, wantErr)
 }

@@ -84,32 +84,38 @@ func (t *TX) shouldIgnore(err error) bool {
 	return false
 }
 
-func From[T any](ctx context.Context, orDB DB) (T, error) {
-	if t, ok := Conn[T](ctx); ok {
-		return t.(T), nil
-	}
-
-	ttx, err := orDB.Begin(ctx)
-	if err != nil {
-		var t T
-
-		return t, err
-	}
-
-	return ttx.(T), nil
-}
-
-// Conn returns underlying tx value from context if it can be type-casted to T
-// Otherwise it returns nil, false
-func Conn[T any](ctx context.Context) (any, bool) {
+// From returns underlying tx value from context if it can be type-casted to T
+// Otherwise it returns default T, false.
+// From returns underlying T from the context which in most cases should probably be pgx.Tx
+// T will mostly be your Tx type (pgx.Tx, *sql.Tx, etc...) but is left as a generic type in order
+// to accommodate cases where people tend to abstract the whole connection/transaction
+// away behind an interface for example, something like Executor (see example).
+//
+// Example:
+//
+//	type Executor interface {
+//		Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
+//		// ... other stuff
+//	}
+//
+// tx, err := tx.From[Executor](ctx, pool)
+//
+// # Or
+//
+// tx, err := tx.From[pgx.Tx](ctx, pool)
+func From[T any](ctx context.Context) (T, bool) {
 	val := ctx.Value(key{})
 	if val == nil {
-		return nil, false
+		var t T
+
+		return t, false
 	}
 
 	tx, ok := val.(T)
 	if !ok {
-		return nil, false
+		var t T
+
+		return t, false
 	}
 
 	return tx, true

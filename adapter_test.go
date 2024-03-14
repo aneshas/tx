@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package tx_test
 
 import (
@@ -5,15 +8,13 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/aneshas/tx"
-	"github.com/aneshas/tx/pgxtx"
+	"github.com/aneshas/tx/pgxtxv5"
 	"github.com/aneshas/tx/sqltx"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"testing"
 
-	_ "github.com/lib/pq" // postgres driver
 	"github.com/orlangure/gnomock"
 	"github.com/orlangure/gnomock/preset/postgres"
 )
@@ -67,14 +68,14 @@ func setupDB(t *testing.T) {
 func TestShould_Commit_Pgx_Transaction(t *testing.T) {
 	name := "success_pgx"
 
-	doPgx(t, tx.New(pgxtx.NewDBFromPool(db)), db, name, false)
+	doPgx(t, tx.New(pgxtxv5.NewDBFromPool(db)), db, name, false)
 	assertSuccess(t, db, name)
 }
 
 func TestShould_Rollback_Pgx_Transaction(t *testing.T) {
 	name := "failure_pgx"
 
-	doPgx(t, tx.New(pgxtx.NewDBFromPool(db)), db, name, true)
+	doPgx(t, tx.New(pgxtxv5.NewDBFromPool(db)), db, name, true)
 	assertFailure(t, db, name)
 }
 
@@ -92,20 +93,13 @@ func TestShould_Rollback_Sql_Transaction(t *testing.T) {
 	assertFailure(t, db, name)
 }
 
-type executor interface {
-	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
-}
-
 func doPgx(t *testing.T, transactor *tx.TX, pool *pgxpool.Pool, name string, fail bool) {
 	t.Helper()
 
 	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
-		ttx, err := pgxtx.From[executor](ctx, pool)
-		if err != nil {
-			return err
-		}
+		ttx, _ := pgxtxv5.From(ctx)
 
-		_, err = ttx.Exec(ctx, `insert into cats (name) values($1)`, name)
+		_, err := ttx.Exec(ctx, `insert into cats (name) values($1)`, name)
 		if err != nil {
 			return err
 		}
@@ -126,12 +120,9 @@ func doSql(t *testing.T, transactor *tx.TX, db *sql.DB, name string, fail bool) 
 	t.Helper()
 
 	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
-		ttx, err := sqltx.From(ctx, db)
-		if err != nil {
-			return err
-		}
+		ttx, _ := sqltx.From(ctx)
 
-		_, err = ttx.Exec(`insert into cats (name) values($1)`, name)
+		_, err := ttx.Exec(`insert into cats (name) values($1)`, name)
 		if err != nil {
 			return err
 		}

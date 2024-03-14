@@ -1,3 +1,3 @@
 test:
-	@go test -race -coverprofile=coverage.out -covermode=atomic $(go list ./... | grep -v testutil)
-	@go tool cover -func=coverage.out
+	@go test -race -coverprofile=profile.cov -v $(shell go list ./... | grep -vE 'cmd|mocks|testdata|testutil')
+	@go tool cover -func=profile.cov | grep total
