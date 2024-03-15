@@ -21,12 +21,12 @@ func (_m *Transactor) EXPECT() *Transactor_Expecter {
 	return &Transactor_Expecter{mock: &_m.Mock}
 }
 
-// Do provides a mock function with given fields: ctx, f
-func (_m *Transactor) Do(ctx context.Context, f func(context.Context) error) error {
+// WithTransaction provides a mock function with given fields: ctx, f
+func (_m *Transactor) WithTransaction(ctx context.Context, f func(context.Context) error) error {
 	ret := _m.Called(ctx, f)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Do")
+		panic("no return value specified for WithTransaction")
 	}
 
 	var r0 error
@@ -39,31 +39,31 @@ func (_m *Transactor) Do(ctx context.Context, f func(context.Context) error) err
 	return r0
 }
 
-// Transactor_Do_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Do'
-type Transactor_Do_Call struct {
+// Transactor_WithTransaction_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'WithTransaction'
+type Transactor_WithTransaction_Call struct {
 	*mock.Call
 }
 
-// Do is a helper method to define mock.On call
+// WithTransaction is a helper method to define mock.On call
 //   - ctx context.Context
 //   - f func(context.Context) error
-func (_e *Transactor_Expecter) Do(ctx interface{}, f interface{}) *Transactor_Do_Call {
-	return &Transactor_Do_Call{Call: _e.mock.On("Do", ctx, f)}
+func (_e *Transactor_Expecter) WithTransaction(ctx interface{}, f interface{}) *Transactor_WithTransaction_Call {
+	return &Transactor_WithTransaction_Call{Call: _e.mock.On("WithTransaction", ctx, f)}
 }
 
-func (_c *Transactor_Do_Call) Run(run func(ctx context.Context, f func(context.Context) error)) *Transactor_Do_Call {
+func (_c *Transactor_WithTransaction_Call) Run(run func(ctx context.Context, f func(context.Context) error)) *Transactor_WithTransaction_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(func(context.Context) error))
 	})
 	return _c
 }
 
-func (_c *Transactor_Do_Call) Return(_a0 error) *Transactor_Do_Call {
+func (_c *Transactor_WithTransaction_Call) Return(_a0 error) *Transactor_WithTransaction_Call {
 	_c.Call.Return(_a0)
 	return _c
 }
 
-func (_c *Transactor_Do_Call) RunAndReturn(run func(context.Context, func(context.Context) error) error) *Transactor_Do_Call {
+func (_c *Transactor_WithTransaction_Call) RunAndReturn(run func(context.Context, func(context.Context) error) error) *Transactor_WithTransaction_Call {
 	_c.Call.Return(run)
 	return _c
 }

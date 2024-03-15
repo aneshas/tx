@@ -19,7 +19,7 @@ func TestShould_Report_Transaction_Begin_Error(t *testing.T) {
 	)
 	transactor := tx.New(db)
 
-	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
+	err := transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		return nil
 	})
 
@@ -33,7 +33,7 @@ func TestShould_Commit_Transaction_On_No_Error(t *testing.T) {
 	)
 	transactor := tx.New(db)
 
-	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
+	err := transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		return nil
 	})
 
@@ -49,7 +49,7 @@ func TestShould_Rollback_Transaction_On_Error(t *testing.T) {
 
 	wantErr := fmt.Errorf("something bad occurred")
 
-	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
+	err := transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		return wantErr
 	})
 
@@ -67,7 +67,7 @@ func TestShould_Report_Unsuccessful_Rollback(t *testing.T) {
 
 	wantErr := fmt.Errorf("process error")
 
-	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
+	err := transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		return wantErr
 	})
 
@@ -88,7 +88,7 @@ func TestShould_Rollback_Transaction_On_Panic_And_RePanic(t *testing.T) {
 		}
 	}()
 
-	_ = transactor.Do(context.TODO(), func(ctx context.Context) error {
+	_ = transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		panic("something very bad occurred")
 	})
 }
@@ -102,7 +102,7 @@ func TestShould_Still_Commit_On_Ignored_Error_And_Propagate_Error(t *testing.T) 
 	)
 	transactor := tx.New(db, tx.WithIgnoredErrors(wantErr))
 
-	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
+	err := transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		return wantErr
 	})
 
@@ -116,7 +116,7 @@ func TestShould_Retrieve_Tx_From_Context(t *testing.T) {
 	)
 	transactor := tx.New(db)
 
-	_ = transactor.Do(context.TODO(), func(ctx context.Context) error {
+	_ = transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		ttx, ok := tx.From[tx.Transaction](ctx)
 
 		assert.True(t, ok)
@@ -133,7 +133,7 @@ func TestShould_Not_Retrieve_Conn_From_Context_On_Mismatched_Type(t *testing.T) 
 	)
 	transactor := tx.New(db)
 
-	_ = transactor.Do(context.TODO(), func(ctx context.Context) error {
+	_ = transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		_, ok := tx.From[mocks.Transaction](ctx)
 
 		assert.False(t, ok)

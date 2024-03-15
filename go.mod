@@ -1,4 +1,4 @@
-module github.com/aneshas/tx
+module github.com/aneshas/tx/v2
 
 go 1.21.0
 

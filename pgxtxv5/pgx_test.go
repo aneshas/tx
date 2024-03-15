@@ -41,7 +41,7 @@ func TestShould_Rollback_Pgx_Transaction(t *testing.T) {
 func doPgx(t *testing.T, transactor *tx.TX, name string, fail bool) {
 	t.Helper()
 
-	err := transactor.Do(context.TODO(), func(ctx context.Context) error {
+	err := transactor.WithTransaction(context.TODO(), func(ctx context.Context) error {
 		ttx, _ := pgxtxv5.From(ctx)
 
 		_, err := ttx.Exec(ctx, `insert into cats (name) values($1)`, name)

@@ -9,8 +9,14 @@ import (
 type key struct{}
 
 // Transactor is a helper transactor interface added for brevity purposes, so you don't have to define your own
+// See TX
 type Transactor interface {
-	Do(ctx context.Context, f func(ctx context.Context) error) error
+	// WithTransaction will wrap f in a sql transaction depending on the DB provider.
+	// This is mostly useful for when we want to control the transaction scope from
+	// application layer, for example application service/command handler.
+	// If f fails with an error, transactor will automatically try to roll the transaction back and report back any errors,
+	// otherwise, the implicit transaction will be committed.
+	WithTransaction(ctx context.Context, f func(ctx context.Context) error) error
 }
 
 // DB represents an interface to a db capable of starting a transaction
@@ -41,12 +47,12 @@ type TX struct {
 	ignoreErrs []error
 }
 
-// Do will execute func f in a sql transaction.
+// WithTransaction will wrap f in a sql transaction depending on the DB provider.
 // This is mostly useful for when we want to control the transaction scope from
 // application layer, for example application service/command handler.
-// If f fails with an error, transactor will automatically try to roll back the transaction and report back any errors,
-// otherwise the implicit transaction will be committed.
-func (t *TX) Do(ctx context.Context, f func(ctx context.Context) error) error {
+// If f fails with an error, transactor will automatically try to roll the transaction back and report back any errors,
+// otherwise, the implicit transaction will be committed.
+func (t *TX) WithTransaction(ctx context.Context, f func(ctx context.Context) error) error {
 	tx, err := t.db.Begin(ctx) // add tx options if different isolation levels are needed
 	if err != nil {
 		return fmt.Errorf("tx: could not start transaction: %w", err)
