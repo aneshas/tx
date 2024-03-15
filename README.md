@@ -67,6 +67,9 @@ func (s *AccountService) ProvisionAccount(ctx context.Context, r ProvisionAccoun
 You will notice that the service looks mostly the same as it would normally apart from embedding `Transactor` interface
 and wrapping the use case execution using `WithTransaction`, both of which say nothing of the way the mechanism is implemented (no infrastructure dependencies).
 
+If the function wrapped via `WithTransaction` errors out or panics the transaction itself will be rolled back and if nil error is
+returned the transaction will be committed. (this behavior can be changed by providing `WithIgnoredErrors(...)` option to `tx.New`)
+
 ### Repo implementation
 Then, your repo might use postgres with pgx and have the following example implementation:
 
@@ -134,3 +137,6 @@ func main() {
 This way, your infrastructural concerns stay in the infrastructure layer where they really belong.
 
 *Please note that this is only one way of using the abstraction*
+
+## Next up
+- [ ] Add a way to configure transaction isolation levels for individual drivers eg. `pgxtx.NewDBFromPool(pool, ...opts)`
