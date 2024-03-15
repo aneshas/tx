@@ -2,7 +2,7 @@ package pgxtxv5
 
 import (
 	"context"
-	"github.com/aneshas/tx"
+	"github.com/aneshas/tx/v2"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

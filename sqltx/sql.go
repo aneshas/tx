@@ -3,7 +3,7 @@ package sqltx
 import (
 	"context"
 	"database/sql"
-	"github.com/aneshas/tx"
+	"github.com/aneshas/tx/v2"
 )
 
 var (

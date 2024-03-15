@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	tx "github.com/aneshas/tx"
+	tx "github.com/aneshas/tx/v2"
 	mock "github.com/stretchr/testify/mock"
 )
 

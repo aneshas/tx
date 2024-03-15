@@ -3,9 +3,9 @@ package tx_test
 import (
 	"context"
 	"fmt"
-	"github.com/aneshas/tx"
-	"github.com/aneshas/tx/testutil"
-	"github.com/aneshas/tx/testutil/mocks"
+	"github.com/aneshas/tx/v2"
+	"github.com/aneshas/tx/v2/testutil"
+	"github.com/aneshas/tx/v2/testutil/mocks"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

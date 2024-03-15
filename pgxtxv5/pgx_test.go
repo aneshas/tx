@@ -6,9 +6,9 @@ package pgxtxv5_test
 import (
 	"context"
 	"fmt"
-	"github.com/aneshas/tx"
-	"github.com/aneshas/tx/pgxtxv5"
-	"github.com/aneshas/tx/testutil"
+	"github.com/aneshas/tx/v2"
+	"github.com/aneshas/tx/v2/pgxtxv5"
+	"github.com/aneshas/tx/v2/testutil"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"testing"

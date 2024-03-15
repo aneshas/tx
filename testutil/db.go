@@ -1,7 +1,7 @@
 package testutil
 
 import (
-	"github.com/aneshas/tx/testutil/mocks"
+	"github.com/aneshas/tx/v2/testutil/mocks"
 	"github.com/stretchr/testify/mock"
 	"testing"
 )
