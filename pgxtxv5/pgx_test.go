@@ -9,6 +9,7 @@ import (
 	"github.com/aneshas/tx/v2"
 	"github.com/aneshas/tx/v2/pgxtxv5"
 	"github.com/aneshas/tx/v2/testutil"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -27,7 +28,18 @@ func TestMain(m *testing.M) {
 func TestShould_Commit_Pgx_Transaction(t *testing.T) {
 	name := "success_pgx"
 
-	doPgx(t, tx.New(pgxtxv5.NewDBFromPool(db)), name, false)
+	doPgx(
+		t,
+		tx.New(
+			pgxtxv5.NewDBFromPool(
+				db,
+				pgxtxv5.WithTxOptions(pgx.TxOptions{}),
+			),
+		),
+		name,
+		false,
+	)
+
 	testutil.AssertSuccess(t, db, name)
 }
 

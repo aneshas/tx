@@ -141,6 +141,3 @@ This way, your infrastructural concerns stay in the infrastructure layer where t
 ## Testing
 You can use `testtx.New()` as a convenient test helper. It creates a test transactor which only calls f without
 setting any sort of transaction in the `ctx` and preserves any errors raised by f in `.Err` field.
-
-## Next up
-- Add isolation level configuration for individual drivers eg. through `pgxtx.NewDBFromPool(pool, ...opts)`

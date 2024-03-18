@@ -10,21 +10,28 @@ import (
 var _ tx.DB = &Pool{}
 
 // NewDBFromPool instantiates new tx.DB *pgxpool.Pool wrapper
-func NewDBFromPool(pool *pgxpool.Pool) tx.DB {
-	// We can extend these to be able to receive isolation options
-	// which would then be passed to tx.Begin
+func NewDBFromPool(pool *pgxpool.Pool, opts ...PgxTxOption) tx.DB {
+	p := Pool{
+		Pool: pool,
+	}
 
-	return &Pool{pool}
+	for _, opt := range opts {
+		opt(&p)
+	}
+
+	return &p
 }
 
 // Pool implements tx.DB
 type Pool struct {
 	*pgxpool.Pool
+
+	txOpts pgx.TxOptions
 }
 
 // Begin begins pgx transaction
 func (p *Pool) Begin(ctx context.Context) (tx.Transaction, error) {
-	return p.Pool.Begin(ctx)
+	return p.Pool.BeginTx(ctx, p.txOpts)
 }
 
 // From returns underlying pgx.Tx from the context.
