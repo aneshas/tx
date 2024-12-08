@@ -4,7 +4,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/aneshas/tx/badge.svg)](https://coveralls.io/github/aneshas/tx)
 [![Go Reference](https://pkg.go.dev/badge/github.com/aneshas/tx.svg)](https://pkg.go.dev/github.com/aneshas/tx)
 
-`go get github.com/aneshas/tx/v2`
+`go get github.com/aneshas/tx/v2@latest`
 
 Package tx provides a simple abstraction which leverages `context.Context` in order to provide a transactional behavior
 which one could use in their use case orchestrator (eg. application service, command handler, etc...).  You might think of it
@@ -19,7 +19,7 @@ still does not violate the reasoning behind context package - which is to carry 
 a database transaction in this case.
 
 ## Drivers
-Library currently supports `pgx` and stdlib `sql` out of the box although it is very easy to implement any additional ones
+Library currently supports `pgx`, `gorm` and stdlib `sql` out of the box although it is very easy to implement any additional ones
 you might need.
 
 ## Example
